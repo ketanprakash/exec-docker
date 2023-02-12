@@ -19,11 +19,11 @@ export const handler = async (event) => {
 
   try {
     const fileName = await generateFileName();
-    const { code, input = "" } = event;
+    const { code, input = "" } = JSON.parse(event["body"]);
 
-    const codePath = path.join(tmpDir, fileName + ".c");
-    const inputPath = path.join(tmpDir, fileName + ".txt");
+    const codePath = path.join(tmpDir, fileName + ".cpp");
     const exePath = path.join(tmpDir, fileName + ".exe");
+    const inputPath = path.join(tmpDir, fileName + ".txt");
 
     await fs.writeFile(codePath, code, function (err) {
       if (err) throw err;
@@ -33,7 +33,6 @@ export const handler = async (event) => {
     });
 
     await execAsync(`gcc ${codePath} -o ${exePath}`);
-
     const { error, stdout, stderr } = await execAsync(
       `${exePath} < ${inputPath}`
     ).catch((error) => {
