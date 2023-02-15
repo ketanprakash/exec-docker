@@ -33,11 +33,15 @@ export const handler = async (event) => {
     });
 
     await execAsync(`gcc ${codePath} -o ${exePath}`);
+    const startTime = new Date().getTime();
     const { error, stdout, stderr } = await execAsync(
-      `${exePath} < ${inputPath}`
+      `${exePath} < ${inputPath}`,
+      { timeout: 4000 }
     ).catch((error) => {
       throw error;
     });
+    const endTime = new Date().getTime();
+    const executionTime = endTime - startTime;
 
     const output = error || stderr || stdout;
     await fs.unlink(codePath);
@@ -48,7 +52,7 @@ export const handler = async (event) => {
         "Content-Type": "application/json",
       },
       isBase64Encoded: false,
-      body: JSON.stringify({ data: output, status: true }),
+      body: JSON.stringify({ data: output, status: true, executionTime }),
     };
 
     return response;
